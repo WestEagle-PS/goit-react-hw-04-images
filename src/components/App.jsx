@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { searchPosts } from 'shared/api/getFetch';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -6,106 +6,89 @@ import Searchbar from './Searchbar/Searchbar';
 import Spinner from 'shared/components/Loader/Loader';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from '../shared/components/Button/Button';
-
 import Modal from '../shared/components/Modal/Modal';
-
 import css from './app.module.scss';
 
-export class App extends Component {
-  state = {
-    images: [],
-    page: 1,
-    total: null,
-    search: '',
-    status: 'idle',
-    error: null,
-    showModal: false,
-    postDetails: {},
-  };
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(null);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [postDetails, setPostDetails] = useState({});
 
-  componentDidUpdate(prevProps, prevState) {
-    const { search, page } = this.state;
-    if (search !== prevState.search || page !== prevState.page) {
-      this.setState({ status: 'pending' });
-      this.getFetch();
+  useEffect(() => {
+    const getFetch = async () => {
+      try {
+        setStatus('pending');
+        const { data } = await searchPosts(search, page);
+        setImages(prevImages => [...prevImages, ...data.hits]);
+        setTotal(data.total);
+        setStatus('sucess');
+      } catch ({ error }) {
+        const errorMessage = error.data.message || 'Cannot fetch images.';
+        setError(errorMessage);
+        setStatus('error');
+      }
+    };
+
+    if (search) {
+      getFetch();
     }
-  }
+  }, [search, page]);
 
-  getFormData = data => {
-    const { search } = this.state;
+  const getFormData = data => {
     if (search !== data) {
-      this.setState({ search: data, images: [], page: 1, total: null });
+      setSearch(data);
+      setImages([]);
+      setPage(1);
+      setTotal(null);
     }
   };
 
-  async getFetch() {
-    try {
-      const { search, page } = this.state;
-      const { data } = await searchPosts(search, page);
-      this.setState(({ images }) => ({
-        images: [...images, ...data.hits],
-        total: data.total,
-        status: 'sucess',
-      }));
-    } catch ({ error }) {
-      this.setState({
-        error: error.data.message || 'Cannot fetch images.',
-        status: 'rejected',
-      });
-    }
-  }
+  const handleLoadMoreClick = () => setPage(prevPage => prevPage + 1);
 
-  handleLoadMoreClick = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-
-  notifyError = message => {
+  const notifyError = message => {
     toast.error(message);
   };
 
-  showModal = ({ largeImageURL, tags }) => {
-    this.setState({
-      showModal: true,
-      postDetails: {
-        largeImageURL,
-        tags,
-      },
-    });
+  const onShowModal = ({ largeImageURL, tags }) => {
+    setShowModal(true);
+    setPostDetails({ largeImageURL, tags });
   };
 
-  closeModal = () => {
-    this.setState({ showModal: false, postDetails: {} });
+  const closeModal = () => {
+    setShowModal(false);
+    setPostDetails({});
   };
 
-  render() {
-    const { images, page, status, error, total, showModal, postDetails } = this.state;
-
-    return (
-      <div className={css.container}>
-        {showModal && (
-          <Modal onClose={this.closeModal}>
-            <img src={postDetails.largeImageURL} alt={postDetails.tags} />
-          </Modal>
-        )}
-        <Searchbar onSubmit={this.getFormData} />
-        {status === 'pending' && <Spinner />}
-        {status === 'rejected' && this.notifyError(error)}
-        {total === 0 && this.notifyError('Cannot find images')}
-        {(status === 'sucess' || images.length > 0) && <ImageGallery images={images} showModal={this.showModal} />}
-        {Boolean(images?.length) && total >= page * 12 && <Button onClick={this.handleLoadMoreClick} />}
-        <ToastContainer
-          position="top-center"
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="colored"
-        />
-      </div>
-    );
-  }
-}
+  return (
+    <div className={css.container}>
+      {showModal && (
+        <Modal onClose={closeModal}>
+          <img src={postDetails.largeImageURL} alt={postDetails.tags} />
+        </Modal>
+      )}
+      <Searchbar onSubmit={getFormData} />
+      {status === 'pending' && <Spinner />}
+      {status === 'rejected' && this.notifyError(error)}
+      {total === 0 && notifyError('Cannot find images')}
+      {(status === 'sucess' || images.length > 0) && <ImageGallery images={images} showModal={onShowModal} />}
+      {Boolean(images?.length) && total >= page * 12 && <Button onClick={handleLoadMoreClick} />}
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+    </div>
+  );
+};

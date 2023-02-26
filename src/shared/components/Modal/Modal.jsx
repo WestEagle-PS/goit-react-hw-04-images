@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { SlClose } from 'react-icons/sl';
 // import CloseIcon from '@mui/icons-material/Close';
@@ -7,37 +7,31 @@ import css from './modal.module.scss';
 
 const modalRoot = document.getElementById('modal-root');
 
-class Modal extends Component {
-  componentDidMount() {
-    document.body.addEventListener('keydown', this.handleClose);
-  }
+const Modal = ({ onClose, children }) => {
+  useEffect(() => {
+    document.body.addEventListener('keydown', handleClose);
 
-  componentWillUnmount() {
-    document.body.removeEventListener('keydown', this.handleClose);
-  }
+    return () => document.body.removeEventListener('keydown', this.handleClose);
+  }, []);
 
-  handleClose = ({ target, currentTarget, code }) => {
+  const handleClose = ({ target, currentTarget, code }) => {
     if (target === currentTarget || code === 'Escape') {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  render() {
-    const { onClose, children } = this.props;
-
-    return createPortal(
-      <div className={css.overlay} onClick={this.handleClose}>
-        <div className={css.modal}>
-          <button className={css.button} type="button" onClick={onClose}>
-            <SlClose className={css.icon} />
-          </button>
-          {children}
-        </div>
-      </div>,
-      modalRoot
-    );
-  }
-}
+  return createPortal(
+    <div className={css.overlay} onClick={handleClose}>
+      <div className={css.modal}>
+        <button className={css.button} type="button" onClick={onClose}>
+          <SlClose className={css.icon} />
+        </button>
+        {children}
+      </div>
+    </div>,
+    modalRoot
+  );
+};
 
 export default Modal;
 
@@ -45,3 +39,12 @@ Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
 };
+
+// class Modal extends Component {
+//   componentDidMount() {
+//     document.body.addEventListener('keydown', this.handleClose);
+//   }
+
+//   componentWillUnmount() {
+//     document.body.removeEventListener('keydown', this.handleClose);
+//   }
