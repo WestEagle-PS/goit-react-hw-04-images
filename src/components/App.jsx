@@ -48,8 +48,6 @@ export const App = () => {
     }
   };
 
-  const handleLoadMoreClick = () => setPage(prevPage => prevPage + 1);
-
   const notifyError = message => {
     toast.error(message);
   };
@@ -63,6 +61,8 @@ export const App = () => {
     setShowModal(false);
     setPostDetails({});
   };
+
+  const handleLoadMoreClick = () => setPage(prevPage => prevPage + 1);
 
   return (
     <div className={css.container}>
