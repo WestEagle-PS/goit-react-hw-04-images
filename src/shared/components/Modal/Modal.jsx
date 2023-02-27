@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { SlClose } from 'react-icons/sl';
 // import CloseIcon from '@mui/icons-material/Close';
@@ -33,18 +33,9 @@ const Modal = ({ onClose, children }) => {
   );
 };
 
-export default Modal;
+export default memo(Modal);
 
 Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
 };
-
-// class Modal extends Component {
-//   componentDidMount() {
-//     document.body.addEventListener('keydown', this.handleClose);
-//   }
-
-//   componentWillUnmount() {
-//     document.body.removeEventListener('keydown', this.handleClose);
-//   }

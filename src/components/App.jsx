@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { searchPosts } from 'shared/api/getFetch';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -48,21 +48,21 @@ export const App = () => {
     }
   };
 
-  const handleLoadMoreClick = () => setPage(prevPage => prevPage + 1);
+  const handleLoadMoreClick = useCallback(() => setPage(prevPage => prevPage + 1), []);
 
   const notifyError = message => {
     toast.error(message);
   };
 
-  const onShowModal = ({ largeImageURL, tags }) => {
+  const onShowModal = useCallback(({ largeImageURL, tags }) => {
     setShowModal(true);
     setPostDetails({ largeImageURL, tags });
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowModal(false);
     setPostDetails({});
-  };
+  }, []);
 
   return (
     <div className={css.container}>
