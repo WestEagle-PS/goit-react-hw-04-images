@@ -12,7 +12,7 @@ const Modal = ({ onClose, children }) => {
     document.body.addEventListener('keydown', handleClose);
 
     return () => document.body.removeEventListener('keydown', handleClose);
-  }, []);
+  });
 
   const handleClose = ({ target, currentTarget, code }) => {
     if (target === currentTarget || code === 'Escape') {
