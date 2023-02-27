@@ -1,4 +1,4 @@
-import { useEffect, memo } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { SlClose } from 'react-icons/sl';
 // import CloseIcon from '@mui/icons-material/Close';
@@ -33,7 +33,7 @@ const Modal = ({ onClose, children }) => {
   );
 };
 
-export default memo(Modal);
+export default Modal;
 
 Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
